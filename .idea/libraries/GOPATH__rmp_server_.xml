@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;rmp-server&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../Go/src/linkedlist" />
+      <root url="file://$PROJECT_DIR$/../Go/src/tumbr_old" />
+      <root url="file://$PROJECT_DIR$/../Go/src/github.com" />
+      <root url="file://$PROJECT_DIR$/../Go/src/testing" />
+      <root url="file://$PROJECT_DIR$/../Go/src/tumblr" />
+      <root url="file://$PROJECT_DIR$/../Go/src/linkedlisttest" />
+      <root url="file://$PROJECT_DIR$/../Go/src/chan" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+      <root url="file://$PROJECT_DIR$/../Go/src/github.com/mrjones/oauth/.git" />
+      <root url="file://$PROJECT_DIR$/../Go/src/github.com/kurrik/oauth1a/.git" />
+      <root url="file://$PROJECT_DIR$/../Go/src/github.com/garyburd/go-oauth/.git" />
+    </excluded>
+  </library>
+</component>
