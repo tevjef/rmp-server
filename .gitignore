@@ -44,3 +44,4 @@ Temporary Items
 
 #intellij
 .idea/
+secrets.go

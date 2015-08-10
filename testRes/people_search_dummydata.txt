@@ -1,0 +1,165 @@
+<html class=""><head>
+ 		<meta charset="utf-8">
+ 		<title>Rutgers Online Directory - Person Display</title>
+        <!-- KEYWORDS AND DESCRIPTIONS GO INTO THIS SECTION -->
+        <meta name="keywords" content="Rutgers, Online Directory, ROD, Peoplesearch, find people, directory">
+        <meta name="description" content="Online directory of students, faculty, and staff at Rutgers University">
+        <meta name="viewport" content="width=device-width,target-densitydpi=device-dpi">
+         <link rel="stylesheet" href="/css/rod.css" type="text/css" media="all">
+        <script src="/js/common.js" type="text/javascript"></script>
+
+		 <script type="text/javascript" src="https://search.rutgers.edu/js/css-override.js"></script><style type="text/css"></style>
+
+
+
+        <!-- $Id: PDB_DISPLAY_b.sql,v 1.127 2015/02/11 19:46:01 ad764 Exp $ -->
+
+     <style type="text/css">.fancybox-margin{margin-right:17px;}</style></head>
+
+    <body id="people">
+        <div id="header">
+            <img src="/images/uw_header.gif" height="90" width="616" alt="Rutgers, The State University of New Jersey" title="Rutgers, The State University of New Jersey">
+
+            <div id="campusAndDepartmentBanner">
+
+                <!-- UNIT NAME LINK - CHANGE DEPARTMENT TITLE -->
+                <div id="campusBanner">
+                   <a href="http://www.camden.rutgers.edu"><img src="/images/camden.gif" height="16" alt="CAMDEN" title="CAMDEN"></a>
+                    <a href="http://www.newark.rutgers.edu"><img src="/images/newark.gif" height="16" alt="NEWARK" title="NEWARK"></a>
+                    <a href="http://nbp.rutgers.edu"><img src="/images/new_brunswick-piscataway.gif" height="16" alt="NEW BRUNSWICK/PISCATAWAY" title="NEW BRUNSWICK/PISCATAWAY"></a>
+                 </div>
+
+
+                <div id="pageTitleBanner"><img src="/images/clearpix.gif" alt="" height="39"></div>                <!-- PAGE TITLE IMAGE ENDS -->
+            </div>
+
+        <!-- END HEADER -->
+
+        </div>
+
+
+          <!-- CONTENT -->
+        <div id="content">
+            <div class="dataset clear">
+
+
+                        <legend><strong>Search Results</strong></legend>
+                        <div style="width:100%;margin-left:auto;margin-right:auto;">
+                            <h3 class="c">DOUGLAS W. MORRISON </h3>
+ <p style="margin-top:0;"><strong>(FACULTY)</strong></p>
+<dl>
+                           <dt>Title:</dt>
+                            <dd>ASSOCIATE PROFESSOR</dd></dl>
+
+             <h4>Telephone Numbers  (Local Business)</h4><dl>
+<dt>Phone:</dt>
+<dd>(973) 353-1268</dd>
+<dt>Phone:</dt>
+<dd>(973) 353-5347</dd>
+<dt>Fax:</dt>
+<dd>(973) 353-5518</dd>
+</dl> 
+<h4>Email Address</h4><dl>
+<dt>Faculty:</dt>
+           <dd>
+             <a href="mailto:dougmorr@andromeda.rutgers.edu">dougmorr@andromeda.rutgers.edu</a></dd>
+</dl> 
+<dl> 
+<h4>Postal Address</h4>
+<dt>Faculty</dt>
+    <dd>FASN - Biological Sciences<br>
+&nbsp;195 University Avenue, Rm 407<br>
+&nbsp;Newark, NJ&nbsp;&nbsp;
+07102-1814
+</dd>
+</dl>
+<h4>Location</h4><dl>
+                         <dt>
+Faculty:</dt> <dd>&nbsp;Room 407<br>
+&nbsp;Boyden Hall<br>
+
+&nbsp;Newark
+                        
+</dd>
+</dl>
+</div><br><br>
+                   <form method="post" action="https://www.acs.rutgers.edu/pls/pdb_p/Pdb_Display.search_results" name="thisform">
+                     <fieldset>
+                        <legend><strong>Refine Or New Search</strong></legend>
+                        <div style="width:100%;margin-left:auto;margin-right:auto;">
+                            <p>
+                                If the person you are looking for does not appear, try refining your search entries below:
+                            </p>
+                            <p>
+                                <label for="lastName"><span class="accesskey">L</span>ast Name:&nbsp;&nbsp;[Required]</label>
+
+                                <br>
+
+                            <input tabindex="4" accesskey="l" class="required" type="text" id="lastName" name="p_name_last" size="25" maxlength="23">
+
+                           </p>
+                            <p>
+                                <label for="firstName"><span class="accesskey">F</span>irst Name:&nbsp;&nbsp;[or initial]</label>
+                                <br>
+                                <input tabindex="5" accesskey="f" type="text" id="firstName" name="p_name_first" size="25" maxlength="23">
+                            </p>
+
+
+                          <p>
+                                <input tabindex="6" type="submit" value="Search">
+                                &nbsp;&nbsp;&nbsp;<a href="http://www.acs.rutgers.edu/pls/pdb_p/Pdb_Display.search">Return to Search People</a>
+                            </p>
+
+                        </div>
+                    </fieldset>
+                </form>
+
+
+                                </div></div>
+    <!-- END CONTENT -->
+
+      <!-- FOOTER -->
+
+        <div id="footer">
+
+            <a href="http://www.acs.rutgers.edu/pls/pdb_p/Pdb_Display.search_tips" target="_top">Search People Tips</a> |
+            <a href="http://search.rutgers.edu/changes.shtml" target="_top">Changes &amp; Corrections</a> |
+            <a href="http://www.acs.rutgers.edu/RodFAQs.htm" target="_top">FAQs</a> |
+            <a href="https://personalinfo.rutgers.edu" target="_top">Student Emergency Contact Update</a>
+
+        <br>
+
+        <p>For assistance, contact the Help Desks
+                in: <a href="http://computing.camden.rutgers.edu/" target="_top">Camden</a>, <a href="http://help.newark.rutgers.edu/hd_home.php" target="_top">Newark</a>, or <a href="http://www.nbcs.rutgers.edu/helpdesk/hdnew/" target="_top">New Brunswick.</a> </p>
+
+
+            <!-- CONTACT PERSON RESPONSIBLE FOR WEB SITE (CHANGE EMAIL IN 2 PLACES) -->
+            <p>For additional information about Rutgers, contact RU-INFO
+                  at 732-445-INFO (4636)<br> or visit <a class="info" href="http://colonelhenry.rutgers.edu/" target="_top">Ask Colonel Henry Q&amp;A Service</a>.</p>
+
+            <p>© 2015 Rutgers, The State University of New Jersey. All rights reserved.</p>
+
+        </div>
+
+        <div id="search">
+            &nbsp;</div>
+
+        <!-- RIGHT HAND NAVIGATION -->
+
+        <!-- SIDEBAR START -->
+        <div id="rightSide">
+          <div id="leftNavSide">
+
+                </div></div>
+
+
+
+        <!-- RIGHT HAND NAVIGATION ENDS -->
+            
+
+
+
+
+
+        <!-- END FOOTER -->
+<script id="hiddenlpsubmitdiv" style="display: none;"></script><script>try{for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){ var lastpass_f = document.forms[lastpass_iter]; if(typeof(lastpass_f.lpsubmitorig2)=="undefined"){ lastpass_f.lpsubmitorig2 = lastpass_f.submit; if (typeof(lastpass_f.lpsubmitorig2)=='object'){ continue;}lastpass_f.submit = function(){ var form=this; var customEvent = document.createEvent("Event"); customEvent.initEvent("lpCustomEvent", true, true); var d = document.getElementById("hiddenlpsubmitdiv"); if (d) {for(var i = 0; i < document.forms.length; i++){ if(document.forms[i]==form){ if (typeof(d.innerText) != 'undefined') { d.innerText=i.toString(); } else { d.textContent=i.toString(); } } } d.dispatchEvent(customEvent); }form.lpsubmitorig2(); } } }}catch(e){}</script></body></html>
