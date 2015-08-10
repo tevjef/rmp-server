@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/renstrom/fuzzysearch/fuzzy"
+	"crypto/sha1"
+	"fmt"
 )
 
 type (
@@ -174,4 +176,28 @@ func compareLength(s1, s2 string) int {
 
 func (n *Professor) FullName() string {
 	return n.FirstName + " " + n.LastName
+}
+
+func (n *Professor) convertPhoneNumber() string {
+	var tempStr string
+	for _, val := range n.PhoneNumber {
+		if val != "" {
+			tempStr = tempStr + val + ","
+		}
+	}
+	if len(tempStr) > 0 {
+		tempStr = tempStr[:len(tempStr)-1]
+	}
+	return Empty
+}
+
+func (p *Professor) hash() string {
+	hash := p.FirstName+p.LastName+p.Department+p.Location.City+p.Location.State
+	sum := sha1.Sum([]byte(hash))
+	//%x	base 16, lower-case a-f, two characters per byte
+	return fmt.Sprintf("%x", sum[:8])
+}
+
+func (p *Professor) equals(other *Professor) bool {
+	return p.hash() == other.hash()
 }

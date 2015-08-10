@@ -44,4 +44,5 @@ Temporary Items
 
 #intellij
 .idea/
+*.iml
 secrets.go

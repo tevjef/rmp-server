@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="GO_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <output url="file://$MODULE_DIR$/out/production/rmp-server" />
+    <output-test url="file://$MODULE_DIR$/out/test/rmp-server" />
     <exclude-output />
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="GOPATH &lt;rmp-server&gt;" level="project" />
+    <orderEntry type="library" exported="" name="GOPATH &lt;rmp-server&gt;" level="project" />
   </component>
 </module>

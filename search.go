@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"log"
+	"crypto/sha1"
 )
 
 const (
@@ -244,7 +245,7 @@ func extractEasiness(doc *goquery.Document) float64 {
 
 func extractAverageGrade(doc *goquery.Document) string {
 	result := doc.Find(".breakdown-header").Next().Find(".grade").Text()
-	return trim(result)
+	return format(result)
 }
 
 func extractHotness(doc *goquery.Document) bool {
@@ -253,45 +254,46 @@ func extractHotness(doc *goquery.Document) bool {
 }
 
 func extractRatingsCount(doc *goquery.Document) int {
-	result := trim(doc.Find(".rating-count").Text())
+	result := format(doc.Find(".rating-count").Text())
 	result = substringBefore(result, " ")
-	resultInt, _ := strconv.Atoi(result)
+	resultInt, err := strconv.Atoi(result)
+	checkError(err)
 	return resultInt
 }
 
 func extractCity(doc *goquery.Document) string {
 	result := doc.Find(".result-title").Text()
-	dirty := substringAfter(result, ", ")
-	dirty = substringBefore(dirty, ",")
-	return trim(dirty)
+	result = substringAfter(result, ", ")
+	result = substringBefore(result, ",")
+	return strings.TrimSpace(result)
 }
 
 func extractState(doc *goquery.Document) string {
 	result := doc.Find(".result-title").Text()
 	dirty := substringAfterLast(result, ", ")
-	return trim(dirty)
+	return strings.TrimSpace(dirty)
 }
 
 func extractFirstName(doc *goquery.Document) string {
-	result := trim(doc.Find(".pfname").First().Text())
-	return result
+	result := format(doc.Find(".pfname").First().Text())
+	return format(result)
 }
 
 func extractLastName(doc *goquery.Document) string {
-	result := trim(doc.Find(".plname").First().Text())
-	return result
+	result := format(doc.Find(".plname").First().Text())
+	return format(result)
 }
 
 func extractDepartment(doc *goquery.Document) string {
 	result := doc.Find(".result-title").Text()
 	dirty := substringAfter(result, "Professor in the ")
 	dirty = substringBefore(dirty, " department")
-	return trim(dirty)
+	return format(dirty)
 }
 
 func extractUniversity(doc *goquery.Document) string {
 	result := doc.Find(".result-title").Find(".school").Text()
-	return trim(result)
+	return strings.TrimSpace(result)
 }
 
 func execPeopleSearch(professor *Professor) *Professor {
@@ -321,7 +323,8 @@ func getPeopleSearchDocument(professor *Professor) *goquery.Document {
 func extractTitle(doc *goquery.Document) string {
 	html, _ := doc.Html()
 	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(substringAfter(html, "<dt>Title:</dt>")))
-	return doc.Find("dd").First().Text()
+	result := doc.Find("dd").First().Text()
+	return format(result)
 }
 
 func extractPhone1(doc *goquery.Document) string {
@@ -372,9 +375,9 @@ func extractAddress(doc *goquery.Document) string {
 	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(dirty))
 
 	result := doc.Find("dd").Last().Text()
-	result = strings.Replace(result, "\u00a0", "|", -1)
+	result = strings.Replace(result, "\u00a0", " | ", -1)
 	result = strings.Replace(result, "\n", " ", -1)
-	return trim(result)
+	return strings.TrimSpace(result)
 }
 
 func extractRoomLocation(doc *goquery.Document) string {
@@ -385,11 +388,10 @@ func extractRoomLocation(doc *goquery.Document) string {
 	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(dirty))
 
 	result := doc.Find("dd").Last().Text()
-
-	log.Printf("Log %#v", result)
-	result = strings.Replace(result, "\u00a0", "|", -1)
+	//log.Printf("Log %#v", result)
+	result = strings.Replace(result, "\u00a0", " | ", -1)
 	result = strings.Replace(result, "\n", " ", -1)
-	return trim(result)
+	return strings.TrimSpace(result)
 }
 
 func extractEmail(doc *goquery.Document) string {
@@ -402,4 +404,11 @@ func extractEmail(doc *goquery.Document) string {
 
 func (p *Parameter) hasInclusion() bool {
 	return strings.Contains(p.Inclusion, "/ShowRatings.jsp")
+}
+
+func (p *Parameter) hash() string {
+	hash := p.LastName+p.Department+p.City+p.CourseNumber
+	sum := sha1.Sum([]byte(hash))
+	//%x	base 16, lower-case a-f, two characters per byte
+	return fmt.Sprintf("%x", sum[:8])
 }

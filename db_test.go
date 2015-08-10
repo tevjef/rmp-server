@@ -34,8 +34,9 @@ func TestInsertProfessor(t *testing.T) {
 func TestQueryProfessorById(t *testing.T) {
 	setup()
 
-	result := getProfessorFromRow(queryProfessorById(3, testDatabase))
-	log.Printf("%#v", result)
+	id, result, err := getProfessorFromRow(queryProfessorMappingById(3, testDatabase))
+	checkError(err)
+	log.Printf("ID: %d %#v ", id, result)
 
 	tearDown()
 }
@@ -60,9 +61,11 @@ func TestServerSearch(t *testing.T) {
 	setup()
 
 	params := Parameter{
-		LastName:   "Morrison",
-		Department: "Science",
+		LastName:   "Kapadia",
+		Department: "Math",
 		City:       "Newark",
+		CourseNumber:"101",
+
 		IsRutgers:  true}
 
 	result := SearchServers(params, testDatabase)

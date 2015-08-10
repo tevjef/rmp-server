@@ -12,8 +12,11 @@ const (
 )
 
 var l = strings.ToLower
-var trim = strings.TrimSpace
+var format = formatString
 
+func formatString(s string) string {
+	return strings.Title(l(strings.TrimSpace(s)))
+}
 func substringAfter(str, separator string) string {
 	if isEmpty(str) {
 		return str
@@ -65,14 +68,6 @@ func checkError(err error) {
 	if err != nil {
 		log.Panic(err)
 	}
-}
-
-func sliceToString(slice []string) string {
-	var tempStr string
-	for _, val := range slice {
-		tempStr = tempStr + val + ","
-	}
-	return string(tempStr[:len(tempStr)-1])
 }
 
 func isEmpty(str string) bool {

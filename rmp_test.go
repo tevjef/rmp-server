@@ -95,6 +95,16 @@ func TestSortByAll(t *testing.T) {
 	return
 }
 
+func TestProfessorHash(t *testing.T) {
+	expected := 16
+	p := makeFullProfessor()
+	result1 := p.hash()
+	assert.Equal(t, expected, len(result1))
+	result2 := p.hash()
+	assert.Equal(t, result1, result2)
+	return
+}
+
 func makeProfessors() (professors Professors) {
 	p1 := &Professor{FirstName: "Douglas", LastName: "Morrison", Location: Location{City: "Newark"}, Department: "Science"}
 	p3 := &Professor{FirstName: "Karl", LastName: "Morrison", Location: Location{City: "New Brunswick"}, Department: "History"}
@@ -134,6 +144,8 @@ func makeFullProfessor() (p *Professor) {
 		},
 	}
 }
+
+
 func printTestProf(p Professors) string {
 	s := make([]string, 1)
 	s = append(s, "\n")
