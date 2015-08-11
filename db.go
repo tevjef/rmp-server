@@ -22,8 +22,6 @@ func init() {
 	db, err := sql.Open("postgres", dbInfo)
 	database = db
 	checkError(err)
-
-	defer database.Close()
 }
 
 func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
@@ -38,6 +36,8 @@ func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 		professorId, professor, err = getProfessorFromRow(queryAdjacentMappingsByParams(params, db))
 		if err != nil && professorId != -1 {
 			insertMapping(params, professorId, db)
+			log.Printf("INSERTING ADJACENT")
+
 		}
 		log.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
 	}
@@ -70,15 +70,18 @@ func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 
 func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
 	var hash string
-	db.QueryRow(`SELECT professor_id, hash FROM professors WHERE professors.hash = $1`, p.hash()).Scan(&professorId, &hash)
+	db.QueryRow(`SELECT professor_id, hash
+		FROM professors
+		WHERE professors.hash = $1`, p.hash()).
+	Scan(&professorId, &hash)
 
 	if hash != p.hash() {
 		err := db.QueryRow(
 			`INSERT INTO professors
 			(first_name, last_name, department, title, email, phone_number, fax_number, school, state,
 			 city, room, address, overall, helpfulness, clarity, easiness, average_grade, hotness,
-			 ratings_count, rating_url)
-		 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING professor_id`,
+			 ratings_count, rating_url, hash)
+		 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING professor_id`,
 			ToNullString(p.FirstName),
 			ToNullString(p.LastName),
 			ToNullString(p.Department),
@@ -100,7 +103,8 @@ func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
 			ToNullString(p.Rating.AverageGrade),
 			ToNullBool(p.Rating.Hotness),
 			ToNullFloat64(p.Rating.RatingsCount),
-			ToNullString(p.Rating.RatingUrl)).
+			ToNullString(p.Rating.RatingUrl),
+			p.hash()).
 		Scan(&professorId)
 		checkError(err)
 	}
@@ -108,29 +112,30 @@ func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
 }
 
 func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
-	err := db.QueryRow(
-		`SELECT last_name, subject, course FROM mapping
-		WHERE last_name = $1 AND subject = $2 AND course = $3`,
-		p.FirstName,
-		p.LastName,
-		p.Department,
-		p.CourseNumber,
-		p.Inclusion,
-		professorId).
-	Scan(&mappingId)
+	var hash string
+	db.QueryRow(
+		`SELECT mapping_id, hash FROM mapping
+		WHERE hash = $1`,
+		p.hash(),
+	).
+	Scan(&mappingId, &hash)
 
-	err := db.QueryRow(
-		`INSERT INTO mapping
-			(first_name, last_name, subject, course, inclusion, professor_id)
-		 VALUES($1,$2,$3,$4,$5,$6) RETURNING mapping_id`,
-		ToNullString(p.FirstName),
-		ToNullString(p.LastName),
-		ToNullString(p.Department),
-		ToNullString(p.CourseNumber),
-		ToNullString(p.Inclusion),
-		professorId).
+	if hash != p.hash() {
+		err := db.QueryRow(
+			`INSERT INTO mapping
+			(first_name, last_name, subject, course, inclusion, professor_id, hash)
+		 VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mapping_id`,
+			ToNullString(p.FirstName),
+			ToNullString(p.LastName),
+			ToNullString(p.Department),
+			ToNullString(p.CourseNumber),
+			ToNullString(p.Inclusion),
+			professorId,
+			p.hash(),
+		).
 		Scan(&mappingId)
-	checkError(err)
+		checkError(err)
+	}
 	return
 }
 
@@ -178,16 +183,14 @@ func queryAdjacentMappingsByParams(params Parameter, db *sql.DB) *sql.Row {
 			ON mapping_exclusions.mapping_id = mapping.mapping_id
 		LEFT JOIN professors
 			ON mapping.professor_id = professors.professor_id
-		WHERE mapping.professor_id IS NOT NULL AND mapping_exclusions.mapping_id IS NULL
-		AND mapping.first_name = $1
-		AND mapping.last_name = $2
-		AND mapping.subject = $3
-		AND mapping.course = $4
+		WHERE mapping.professor_id IS NOT NULL
+		AND mapping.first_name is NOT NULL
+		AND mapping_exclusions.mapping_id IS NULL
+		AND mapping.last_name = $1
+		AND mapping.subject = $2
 		LIMIT 1;`,
-		params.FirstName,
 		params.LastName,
-		params.Department,
-		params.CourseNumber)
+		params.Department)
 	return row
 }
 
@@ -210,15 +213,9 @@ func queryProfessorMappingByParams(params Parameter, db *sql.DB) *sql.Row {
 		FROM mapping
 		LEFT JOIN professors ON mapping.professor_id = professors.professor_id
 		WHERE mapping.professor_id IS NOT NULL
-		AND mapping.first_name = $1
-		AND mapping.last_name = $2
-		AND mapping.subject = $3
-		AND mapping.course = $4
+		AND mapping.hash = $1
 		LIMIT 1;`,
-		params.FirstName,
-		params.LastName,
-		params.Department,
-		params.CourseNumber)
+		params.hash())
 	return row
 }
 
@@ -284,7 +281,7 @@ func getProfessorFromRow(row *sql.Row) (professorId int, professor *Professor, e
 			},
 		}
 
-		log.Printf("%#s", result)
+		//log.Printf("%#s", result)
 
 		return professorId, result, err
 	}

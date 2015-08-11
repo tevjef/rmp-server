@@ -11,6 +11,7 @@ import (
 	"sync"
 	"log"
 	"crypto/sha1"
+	"regexp"
 )
 
 const (
@@ -128,7 +129,16 @@ func sortProfessors(professors Professors, params Parameter) {
 
 func filterProfessors(professors Professors, params Parameter) (filtered Professors) {
 	for _, val := range professors {
-		if l(val.Location.City) == l(params.City) && l(val.LastName) == l(params.LastName) {
+		//Instead of matching the last name exactly, determine equality by strings.Contains which would give me
+		// support for compound names
+		if l(val.Location.City) == l(params.City) && strings.Contains(l(val.LastName), l(params.LastName)) {
+			if len(params.FirstName) == 0 {
+				filtered = append(filtered, val)
+			} else if len(params.FirstName) > 0 && string(l(params.FirstName)[0]) == string(l(val.FirstName)[0]) {
+				filtered = append(filtered, val)
+			}
+		}
+		if len(params.FirstName) > 0 && string(l(params.City)[0]) == l(params.FirstName) {
 			filtered = append(filtered, val)
 		}
 	}
@@ -170,6 +180,7 @@ func execSearch(name string, isRutgers bool, offset int) *goquery.Document {
 		uni = "+rutgers"
 	}
 	url := fmt.Sprintf(BaseRMPUrl+"/search.jsp?query=%s%s&stateselect=nj&offset=%d", name, uni, offset)
+	log.Println("Search Url", url)
 	doc, _ := goquery.NewDocument(url)
 	return doc
 }
@@ -213,6 +224,7 @@ func extractProfessor(professor *Professor, doc *goquery.Document) {
 	professor.Rating.Helpfullness = extractHelpfulness(doc)
 	professor.Rating.Hotness = extractHotness(doc)
 	professor.Rating.Overall = extractOverall(doc)
+	professor.Rating.RatingsCount = extractRatingsCount(doc)
 
 	professor.Location.School = extractUniversity(doc)
 	professor.Location.City = extractCity(doc)
@@ -253,12 +265,11 @@ func extractHotness(doc *goquery.Document) bool {
 	return !strings.Contains(result, "cold")
 }
 
-func extractRatingsCount(doc *goquery.Document) int {
+func extractRatingsCount(doc *goquery.Document) float64 {
 	result := format(doc.Find(".rating-count").Text())
 	result = substringBefore(result, " ")
-	resultInt, err := strconv.Atoi(result)
-	checkError(err)
-	return resultInt
+	resultFloat, _ := strconv.ParseFloat(result, 64)
+	return resultFloat
 }
 
 func extractCity(doc *goquery.Document) string {
@@ -375,9 +386,14 @@ func extractAddress(doc *goquery.Document) string {
 	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(dirty))
 
 	result := doc.Find("dd").Last().Text()
-	result = strings.Replace(result, "\u00a0", " | ", -1)
-	result = strings.Replace(result, "\n", " ", -1)
+	result = strings.Replace(result, "\u00a0", ", ", -1)
+	result = strings.Replace(result, "\n", "", -1)
+	regex, _ := regexp.Compile(`,\s+,\s`)
+	result = regex.ReplaceAllString(result, ", ")
+	regex, _ = regexp.Compile(`, Rm\s\d{0,}`)
+	result = regex.ReplaceAllString(result, "")
 	return strings.TrimSpace(result)
+	//(\s\b\w*\b){0,2}\s,\sNJ //Match Newark, New Brunswick and Camden
 }
 
 func extractRoomLocation(doc *goquery.Document) string {
@@ -388,9 +404,25 @@ func extractRoomLocation(doc *goquery.Document) string {
 	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(dirty))
 
 	result := doc.Find("dd").Last().Text()
-	//log.Printf("Log %#v", result)
+	result = strings.Replace(result, "\u00a0", "", -1)
+	result = strings.Replace(result, "\n", ", ", -1)
+	regex, _ := regexp.Compile(`,\s+,\s`)
+	result = strings.TrimSpace(regex.ReplaceAllString(result, ", "))
+	return result[:len(result)-1]
+}
+
+func extractRoomNumber(doc *goquery.Document) string {
+	html, _ := doc.Html()
+	dirty := substringAfter(html, "<h4>Location</h4>")
+	dirty = substringBefore(dirty, "<form")
+
+	doc, _ = goquery.NewDocumentFromReader(bytes.NewBufferString(dirty))
+
+	result := doc.Find("dd").Last().Text()
 	result = strings.Replace(result, "\u00a0", " | ", -1)
 	result = strings.Replace(result, "\n", " ", -1)
+	regexp, _ := regexp.Compile(`Room\s\d{0,}`)
+	result = regexp.FindString(result)
 	return strings.TrimSpace(result)
 }
 

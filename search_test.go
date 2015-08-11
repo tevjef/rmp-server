@@ -17,10 +17,10 @@ const (
 
 func TestSearch(t *testing.T) {
 	params := Parameter{
-		LastName:   "Randall",
-		Department: "Math",
+		LastName:   "watrous-",
+		Department: "Computer Science",
 		City:       "Newark",
-		IsRutgers:  true}
+		IsRutgers:  false}
 
 	options := Options{
 		FilterSearch:  true,
@@ -283,6 +283,12 @@ func TestExtractAddress(t *testing.T) {
 
 func TestExtractRoomLocation(t *testing.T) {
 	result := extractRoomLocation(getDummyDoc(RutgersSearch))
+	t.Log("Result:", result)
+	assert.True(t, len(result) > 1)
+}
+
+func TestExtractRoomNumber(t *testing.T) {
+	result := extractRoomNumber(getDummyDoc(RutgersSearch))
 	t.Log("Result:", result)
 	assert.True(t, len(result) > 1)
 }

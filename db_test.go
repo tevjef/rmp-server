@@ -41,7 +41,7 @@ func TestQueryProfessorById(t *testing.T) {
 	tearDown()
 }
 
-func BenchmarkInsertProfessor(b *testing.B) {
+func InsertProfessor(b *testing.B) {
 	setup()
 	for n := 0; n < b.N; n++ {
 		insertProfessor(makeFullProfessor(), testDatabase)
@@ -61,16 +61,16 @@ func TestServerSearch(t *testing.T) {
 	setup()
 
 	params := Parameter{
-		LastName:   "Kapadia",
-		Department: "Math",
+		LastName:   "Friedman",
+		Department: "History",
 		City:       "Newark",
-		CourseNumber:"101",
+		CourseNumber:"103",
 
 		IsRutgers:  true}
 
 	result := SearchServers(params, testDatabase)
 
-	log.Printf("%#s", result)
+	log.Printf("Result: %#s", result)
 
 	tearDown()
 }

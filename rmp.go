@@ -186,7 +186,7 @@ func (n *Professor) convertPhoneNumber() string {
 		}
 	}
 	if len(tempStr) > 0 {
-		tempStr = tempStr[:len(tempStr)-1]
+		return tempStr[:len(tempStr)-1]
 	}
 	return Empty
 }

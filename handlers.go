@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 )
 
 func searchHandler(c *gin.Context) {
@@ -36,11 +37,11 @@ func searchHandler(c *gin.Context) {
 }
 
 func searchDbHandler(c *gin.Context) {
-	first := l(c.Query("first"))        // ""
-	last := l(c.Query("last"))          // Randall
-	department := l(c.Query("subject")) //Biology
-	courseNumber := c.Query("course")   //198
-	city := l(c.Query("city"))          //newark, new brunswick, camden
+	last := l(format(c.Query("last")))          // Randall
+	department := l(format(c.Query("subject"))) //Biology
+	city := l(format(c.Query("city"))  )        //newark, new brunswick, camden
+	first := l(format(c.Query("first")) )       // ""
+	courseNumber := format(c.Query("course"))   //198
 
 	if isEmpty(last) || isEmpty(department) || isEmpty(city) {
 		c.String(400, "Must supply all paramters")
@@ -55,12 +56,14 @@ func searchDbHandler(c *gin.Context) {
 		Department:   department,
 		IsRutgers:    true}
 
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
+	log.Printf("%#v", params)
+	p := SearchServers(params, database)
 
-	p := search(params, options)
-	printProfs(p)
+	if (p == nil) {
+		params.IsRutgers = false
+		p = SearchServers(params, database)
+	}
+
+	log.Printf("%#v",p)
 	c.JSON(200, p)
 }

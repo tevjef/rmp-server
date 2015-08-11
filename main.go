@@ -9,4 +9,6 @@ func main() {
 	r.GET("/search", searchHandler)
 	r.GET("/searchdb", searchDbHandler)
 	r.Run(":8080")
+
+	defer database.Close()
 }
