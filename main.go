@@ -7,7 +7,7 @@ import (
 func main() {
 	r := gin.Default()
 	r.GET("/search", searchHandler)
-	r.GET("/searchdb", searchDbHandler)
+	r.POST("/search", reportHandler)
 	r.Run(":8080")
 
 	defer database.Close()

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"testing"
 	"log"
+	"strings"
 )
 
 const (
@@ -228,7 +229,8 @@ func TestExtractHotness(t *testing.T) {
 }
 
 func TestExtractRatingsCount(t *testing.T) {
-	expected := 142
+	var expected float64
+	expected = 142
 	result := extractRatingsCount(getDummyDoc(ProfessorListing))
 	t.Log("Result:", result)
 	assert.Equal(t, expected, result)
@@ -246,7 +248,7 @@ func TestExecutePeopleSearch(t *testing.T) {
 }
 
 func TestExtractTitle(t *testing.T) {
-	expected := "ASSOCIATE PROFESSOR"
+	expected := strings.Title(l("ASSOCIATE PROFESSOR"))
 	result := extractTitle(getDummyDoc(RutgersSearch))
 	t.Log("Result:", result)
 	assert.Equal(t, expected, result)

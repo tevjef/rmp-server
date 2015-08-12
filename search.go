@@ -221,7 +221,7 @@ func extractProfessor(professor *Professor, doc *goquery.Document) {
 	professor.Rating.AverageGrade = extractAverageGrade(doc)
 	professor.Rating.Clarity = extractClarity(doc)
 	professor.Rating.Easiness = extractEasiness(doc)
-	professor.Rating.Helpfullness = extractHelpfulness(doc)
+	professor.Rating.Helpfulness = extractHelpfulness(doc)
 	professor.Rating.Hotness = extractHotness(doc)
 	professor.Rating.Overall = extractOverall(doc)
 	professor.Rating.RatingsCount = extractRatingsCount(doc)
@@ -408,7 +408,10 @@ func extractRoomLocation(doc *goquery.Document) string {
 	result = strings.Replace(result, "\n", ", ", -1)
 	regex, _ := regexp.Compile(`,\s+,\s`)
 	result = strings.TrimSpace(regex.ReplaceAllString(result, ", "))
-	return result[:len(result)-1]
+	if len(result) > 0 && strings.LastIndex(result, ",") == (len(result) -1) {
+		return result[:len(result) -1]
+	}
+	return result
 }
 
 func extractRoomNumber(doc *goquery.Document) string {

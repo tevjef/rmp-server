@@ -134,7 +134,7 @@ func makeFullProfessor() (p *Professor) {
 		},
 		Rating: Rating{
 			Overall:      4.5,
-			Helpfullness: 4.1,
+			Helpfulness: 4.1,
 			Clarity:      4.9,
 			Easiness:     4.9,
 			AverageGrade: "F",

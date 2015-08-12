@@ -24,6 +24,15 @@ func init() {
 	checkError(err)
 }
 
+func RefreshDatabase(db *sql.DB) {
+	params := constructParametersFromRows(queryStaleMappingsForUpdate(db), db)
+
+	for _, param := range params{
+		prof := BasicSearch(param, db)
+		log.Printf("REFRESHED: %#s", prof)
+	}
+}
+
 func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 	var err error
 	var professorId int
@@ -42,30 +51,35 @@ func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 		log.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
 	}
 	if professor == nil {
-		options := Options{
-			FilterSearch:  true,
-			RutgersSearch: true,
-			SortSearch:    true}
-
-		professors := search(params, options)
-
-		if len(professors) > 0 {
-			professor = professors[0]
-		}
-
-		log.Printf("SEARCH RESULTS: %#s\n\n", professor)
-
-
-		if professor != nil {
-			professorId := insertProfessor(professor, db)
-			exclusionIds := insertExclusions(params.Exclusion, db)
-			mappingId := insertMapping(params, professorId, db)
-			insertMappingExclusions(mappingId, exclusionIds, db)
-			_, professor, _ = getProfessorFromRow(queryProfessorMappingById(professorId, db))
-			log.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
-		}
+		professor = BasicSearch(params, db)
 	}
 	return professor
+}
+
+func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
+	options := Options{
+		FilterSearch:  true,
+		RutgersSearch: true,
+		SortSearch:    true}
+
+	professors := search(params, options)
+
+	if len(professors) > 0 {
+		professor = professors[0]
+	}
+
+	log.Printf("SEARCH RESULTS: %#s\n\n", professor)
+
+
+	if professor != nil {
+		professorId := insertProfessor(professor, db)
+		exclusionIds := insertExclusions(params.Exclusion, db)
+		mappingId := insertMapping(params, professorId, db)
+		insertMappingExclusions(mappingId, exclusionIds, db)
+		_, professor, _ = getProfessorFromRow(queryProfessorMappingById(professorId, db))
+		log.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
+	}
+	return nil
 }
 
 func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
@@ -97,7 +111,7 @@ func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
 			ToNullString(p.Location.Address),
 
 			ToNullFloat64(p.Rating.Overall),
-			ToNullFloat64(p.Rating.Helpfullness),
+			ToNullFloat64(p.Rating.Helpfulness),
 			ToNullFloat64(p.Rating.Clarity),
 			ToNullFloat64(p.Rating.Easiness),
 			ToNullString(p.Rating.AverageGrade),
@@ -123,7 +137,7 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 	if hash != p.hash() {
 		err := db.QueryRow(
 			`INSERT INTO mapping
-			(first_name, last_name, subject, course, inclusion, professor_id, hash)
+			(first_name, last_name, subject, course, inclusion, professor_id, hash, is_rutgers)
 		 VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mapping_id`,
 			ToNullString(p.FirstName),
 			ToNullString(p.LastName),
@@ -132,9 +146,12 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 			ToNullString(p.Inclusion),
 			professorId,
 			p.hash(),
+			ToNullBool(p.IsRutgers),
 		).
 		Scan(&mappingId)
 		checkError(err)
+	} else {
+		updateMapping(mappingId, professorId, db)
 	}
 	return
 }
@@ -142,13 +159,22 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 func insertExclusions(exclusions []string, db *sql.DB) (exclusionIds []int) {
 	for _, val := range exclusions {
 		var tempId int
-		err := db.QueryRow(
-			`INSERT INTO exclusions
+		var tempUrl string
+		db.QueryRow(
+		`SELECT url FROM exclusions
+				WHERE url = $1 LIMIT 1 RETURNING exclusion_id, url`,
+		val).
+		Scan(&tempId, &tempUrl)
+
+		if tempUrl != val {
+			err := db.QueryRow(
+				`INSERT INTO exclusions
 				(url)
 			 VALUES($1) RETURNING exclusion_id`,
-			val).
+				val).
 			Scan(&tempId)
-		checkError(err)
+			checkError(err)
+		}
 		exclusionIds = append(exclusionIds, tempId)
 	}
 	return
@@ -170,6 +196,74 @@ func insertMappingExclusions(mappingId int, exclusionIds []int, db *sql.DB) {
 
 		checkError(err)
 	}
+}
+
+func constructParametersFromRows(rows *sql.Rows, db *sql.DB) (params []Parameter) {
+	for rows.Next() {
+		var mappingId int
+		var firstName string
+		var lastName string
+		var subject string
+		var course string
+		var inclusion string
+		var exclusions []string
+		var isRutgers bool
+
+		rows.Scan(&mappingId, &firstName, &lastName, &subject, &course, &inclusion, &isRutgers)
+		exclRows := queryExclusionsForMapping(mappingId, db)
+		for exclRows.Next() {
+			var tempExclusions string
+			exclRows.Scan(&tempExclusions)
+			exclusions = append(exclusions, tempExclusions)
+		}
+
+		param :=  Parameter{
+			FirstName:firstName,
+			LastName:lastName,
+			Department:subject,
+			CourseNumber:course,
+			Inclusion:inclusion,
+			Exclusion:exclusions,
+			IsRutgers:isRutgers,
+		}
+		params = append(params, param)
+	}
+	return
+}
+
+func queryStaleMappingsForUpdate(db *sql.DB) *sql.Rows {
+	rows, err := db.Query(
+		`SELECT mapping.mapping_id, mapping.first_name, mapping.last_name, mapping.subject, mapping.course, mapping.inclusion, is_rutgers
+		FROM
+			mapping
+		WHERE
+			mapping.is_stale`)
+	checkError(err)
+	return rows
+}
+
+func updateMapping(mappingId, professorId int, db *sql.DB) (id int) {
+	row := db.QueryRow(
+		`UPDATE mapping
+		SET professor_id = $1, is_stale = FALSE
+		WHERE mapping_id = $2 RETURNING mapping_id`, professorId, mappingId)
+	err := row.Scan(&id)
+	checkError(err)
+	return
+}
+
+//Gets all exclusions for a particular mapping
+func queryExclusionsForMapping(mappingId int, db *sql.DB) *sql.Rows {
+	rows, err := db.Query(
+		`SELECT exclusions.url FROM mapping_exclusions
+		INNER JOIN
+			exclusions ON mapping_exclusions.exclusion_id = exclusions.exclusion_id
+		INNER JOIN
+			mapping ON mapping.mapping_id = mapping_exclusions.mapping_id
+		WHERE
+			mapping.mapping_id = $1`, mappingId)
+	checkError(err)
+	return rows
 }
 
 func queryAdjacentMappingsByParams(params Parameter, db *sql.DB) *sql.Row {
@@ -271,7 +365,7 @@ func getProfessorFromRow(row *sql.Row) (professorId int, professor *Professor, e
 			},
 			Rating: Rating{
 				Overall:      Overall.Float64,
-				Helpfullness: Helpfulness.Float64,
+				Helpfulness: Helpfulness.Float64,
 				Easiness:     Easiness.Float64,
 				Clarity:      Clarity.Float64,
 				AverageGrade: AverageGrade.String,
@@ -286,4 +380,13 @@ func getProfessorFromRow(row *sql.Row) (professorId int, professor *Professor, e
 		return professorId, result, err
 	}
 	return -1, nil, err
+}
+
+func incrementStaleCount(param Parameter, db *sql.DB) (mappingId, count int) {
+	row := db.QueryRow(
+		`UPDATE mapping
+		SET stale_count = stale_count + 1
+		WHERE hash = $1 RETURNING mapping_id, stale_count`, param.hash())
+	row.Scan(&mappingId, &count)
+	return
 }

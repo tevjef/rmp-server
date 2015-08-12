@@ -31,8 +31,8 @@ type (
 		Email       string   `json:"email,omitempty"`
 		Department  string   `json:"department,omitempty"`
 		Title       string   `json:"title,omitempty"`
-		PhoneNumber []string `json:"phoneNumber,omitempty"`
-		FaxNumber   string   `json:"phoneNumber,omitempty"`
+		PhoneNumber []string `json:"phone_number,omitempty"`
+		FaxNumber   string   `json:"fax_number,omitempty"`
 		Location    Location `json:"location,omitempty"`
 		Rating      Rating   `json:"rating,omitempty"`
 	}
@@ -47,13 +47,13 @@ type (
 
 	Rating struct {
 		Overall      float64 `json:"overall"`
-		Helpfullness float64 `json:"helpfulness"`
+		Helpfulness float64 `json:"helpfulness"`
 		Easiness     float64 `json:"easiness"`
 		Clarity      float64 `json:"clarity"`
 		AverageGrade string  `json:"average_grade"`
 		Hotness      bool    `json:"hotness"`
-		RatingsCount float64 `json:"ratingsCount"`
-		RatingUrl    string  `json:"ratingUrl,omitempty"`
+		RatingsCount float64 `json:"ratings_count"`
+		RatingUrl    string  `json:"rating_url,omitempty"`
 	}
 )
 
@@ -143,7 +143,6 @@ func (p ProfessorsByCity) Less(i, j int) bool {
 	} else if rank == -1 {
 		return true
 	}
-	print("unreachable")
 	return false
 }
 

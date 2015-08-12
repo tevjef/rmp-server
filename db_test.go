@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 var testDatabase *sql.DB
@@ -54,6 +55,68 @@ func TestInsertExclusions(t *testing.T) {
 
 	insertExclusions([]string{"/ShowRatings.jsp?tid=373482", "/ShowRatings.jsp?tid=1537234"}, testDatabase)
 
+	tearDown()
+}
+
+func TestQueryExclusionsForMapping(t *testing.T) {
+	setup()
+	var url string
+	rows := queryExclusionsForMapping(2, testDatabase)
+	for rows.Next() {
+		rows.Scan(&url)
+	}
+	log.Println("Result", url)
+	assert.True(t, len(url) > 0)
+	tearDown()
+}
+
+func TestIncrementStaleCount(t *testing.T) {
+	setup()
+	expected := 37
+	params := Parameter{
+		LastName:   "Friedman",
+		Department: "History",
+		City:       "Newark",
+		CourseNumber:"103",
+
+		IsRutgers:  true}
+
+	result, _ := incrementStaleCount(params, testDatabase)
+	assert.Equal(t, expected, result)
+	tearDown()
+}
+
+func TestConstructParametersFromRows(t *testing.T) {
+	setup()
+
+	parameters := constructParametersFromRows(queryStaleMappingsForUpdate(testDatabase), testDatabase)
+	log.Printf("%#v", parameters)
+	assert.True(t, len(parameters) > 0)
+
+	tearDown()
+}
+
+func TestUpdateMappings(t *testing.T) {
+	setup()
+
+	rowId := updateMapping(1, 3, testDatabase)
+	assert.True(t, rowId == 1)
+
+	tearDown()
+}
+
+func TestQueryStaleMappingsForUpdate(t *testing.T) {
+	setup()
+
+	var lastName string
+	var dumb string
+	rows := queryStaleMappingsForUpdate(testDatabase)
+	for rows.Next() {
+		err := rows.Scan(&dumb, &dumb, &lastName, &dumb, &dumb, &dumb, &dumb)
+		checkError(err)
+		log.Println("Result", lastName)
+	}
+	assert.True(t, len(lastName) > 1)
 	tearDown()
 }
 
