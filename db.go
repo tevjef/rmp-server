@@ -138,7 +138,7 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 		err := db.QueryRow(
 			`INSERT INTO mapping
 			(first_name, last_name, subject, course, inclusion, professor_id, hash, is_rutgers)
-		 VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING mapping_id`,
+		 VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING mapping_id`,
 			ToNullString(p.FirstName),
 			ToNullString(p.LastName),
 			ToNullString(p.Department),

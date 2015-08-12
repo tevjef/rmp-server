@@ -7,29 +7,36 @@ import (
 )
 
 func searchHandler(c *gin.Context) {
-	params := defaultHandler(c)
-	p := SearchServers(params, database)
-	if (p == nil) {
-		params.IsRutgers = false
-		p = SearchServers(params, database)
+	params, err := defaultHandler(c)
+	if err == nil {
+		p := SearchServers(params, database)
+		if (p == nil) {
+			params.IsRutgers = false
+			p = SearchServers(params, database)
+		}
+		log.Printf("%#v", p)
+		c.JSON(200, p)
+	} else {
+		c.String(400, err.Error())
 	}
-	log.Printf("%#v",p)
-	c.JSON(200, p)
 }
 
 func reportHandler(c *gin.Context) {
-	params := defaultHandler(c)
-	_, count := incrementStaleCount(params,database)
-	c.String(200, fmt.Sprintf("Report count: %d", count))
+	params, err := defaultHandler(c)
+	if err == nil {
+		_, count := incrementStaleCount(params, database)
+		c.String(200, fmt.Sprintf("Report count: %d", count))
+	} else {
+		c.String(400, err.Error())
+	}
 }
 
-func validateParams(c *gin.Context, param Parameter) bool {
+func validateParams(param Parameter) error {
 	if isEmpty(param.LastName) || isEmpty(param.Department) || isEmpty(param.City) || isEmpty(param.CourseNumber){
 		log.Printf("%#v", param)
-		c.String(400, fmt.Sprintf("Must supply all parameters. Params = %#v", param))
-		return true
+		return fmt.Errorf("Must supply all parameters. Params = %#v", param)
 	}
-	return false
+	return nil
 }
 
 func parseQueryBool(queryString string) bool {
@@ -39,7 +46,7 @@ func parseQueryBool(queryString string) bool {
 	return false
 }
 
-func defaultHandler(c *gin.Context) Parameter {
+func defaultHandler(c *gin.Context) (Parameter, error) {
 	last := l(format(c.Query("last")))          // Randall
 	department := l(format(c.Query("subject"))) //Biology
 	city := l(format(c.Query("city"))  )        //newark, new brunswick, camden
@@ -54,8 +61,11 @@ func defaultHandler(c *gin.Context) Parameter {
 		CourseNumber: courseNumber,
 		Department:   department,
 		IsRutgers:    isRutgers}
-	if validateParams(c, params) {
-		return params
+
+	err := validateParams(params)
+	if err != nil {
+		return params, err
 	}
-	return params
+
+	return params, nil
 }
