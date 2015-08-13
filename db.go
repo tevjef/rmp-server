@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	"log"
 	"strings"
 )
 
@@ -80,7 +79,7 @@ func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
 		_, professor, _ = getProfessorFromRow(queryProfessorMappingById(professorId, db))
 		fmt.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
 	}
-	return nil
+	return professor
 }
 
 func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
@@ -279,11 +278,12 @@ func queryAdjacentMappingsByParams(params Parameter, db *sql.DB) *sql.Row {
 		LEFT JOIN professors
 			ON mapping.professor_id = professors.professor_id
 		WHERE mapping.professor_id IS NOT NULL
-		AND mapping.first_name is NOT NULL
 		AND mapping_exclusions.mapping_id IS NULL
-		AND mapping.last_name = $1
-		AND mapping.subject = $2
+		AND mapping.first_name = $1
+		AND mapping.last_name = $2
+		AND mapping.subject = $3
 		LIMIT 1;`,
+		params.FirstName,
 		params.LastName,
 		params.Department)
 	return row
