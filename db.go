@@ -29,7 +29,7 @@ func RefreshDatabase(db *sql.DB) {
 
 	for _, param := range params{
 		prof := BasicSearch(param, db)
-		log.Printf("REFRESHED: %#s", prof)
+		fmt.Printf("REFRESHED: %#s", prof)
 	}
 }
 
@@ -39,16 +39,17 @@ func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 
 	if professor == nil {
 		professorId, professor, _ = getProfessorFromRow(queryProfessorMappingByParams(params, db))
-		log.Printf("ID: %d SEARCH DIRECT: %#s\n\n",professorId, professor)
+		fmt.Printf("ID: %d SEARCH DIRECT: %#s\n\n",professorId, professor)
 	}
+
 	if professor == nil {
 		professorId, professor, err = getProfessorFromRow(queryAdjacentMappingsByParams(params, db))
 		if err != nil && professorId != -1 {
 			insertMapping(params, professorId, db)
-			log.Printf("INSERTING ADJACENT")
+			fmt.Printf("INSERTING ADJACENT")
 
 		}
-		log.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
+		fmt.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
 	}
 	if professor == nil {
 		professor = BasicSearch(params, db)
@@ -68,7 +69,7 @@ func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
 		professor = professors[0]
 	}
 
-	log.Printf("SEARCH RESULTS: %#s\n\n", professor)
+	fmt.Printf("SEARCH RESULTS: %#s\n\n", professor)
 
 
 	if professor != nil {
@@ -77,7 +78,7 @@ func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
 		mappingId := insertMapping(params, professorId, db)
 		insertMappingExclusions(mappingId, exclusionIds, db)
 		_, professor, _ = getProfessorFromRow(queryProfessorMappingById(professorId, db))
-		log.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
+		fmt.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
 	}
 	return nil
 }

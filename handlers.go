@@ -14,7 +14,7 @@ func searchHandler(c *gin.Context) {
 			params.IsRutgers = false
 			p = SearchServers(params, database)
 		}
-		log.Printf("%#v", p)
+		fmt.Printf("%#v", p)
 		c.JSON(200, p)
 	} else {
 		c.String(400, err.Error())
