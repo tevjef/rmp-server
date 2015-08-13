@@ -439,7 +439,7 @@ func (p *Parameter) hasInclusion() bool {
 }
 
 func (p *Parameter) hash() string {
-	hash := p.LastName+p.Department+p.City+p.CourseNumber
+	hash := p.FirstName+p.LastName+p.Department+p.City+p.CourseNumber
 	sum := sha1.Sum([]byte(hash))
 	//%x	base 16, lower-case a-f, two characters per byte
 	return fmt.Sprintf("%x", sum[:8])
