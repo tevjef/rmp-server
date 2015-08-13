@@ -72,7 +72,7 @@ func TestQueryExclusionsForMapping(t *testing.T) {
 
 func TestIncrementStaleCount(t *testing.T) {
 	setup()
-	expected := 37
+	expected := 0
 	params := Parameter{
 		LastName:   "Friedman",
 		Department: "History",
@@ -81,8 +81,10 @@ func TestIncrementStaleCount(t *testing.T) {
 
 		IsRutgers:  true}
 
-	result, _ := incrementStaleCount(params, testDatabase)
-	assert.Equal(t, expected, result)
+	result, count := incrementStaleCount(params, testDatabase)
+	assert.True(t, result > expected)
+	assert.True(t, count > expected, )
+
 	tearDown()
 }
 

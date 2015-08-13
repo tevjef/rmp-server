@@ -31,8 +31,8 @@ type (
 		Email       string   `json:"email,omitempty"`
 		Department  string   `json:"department,omitempty"`
 		Title       string   `json:"title,omitempty"`
-		PhoneNumber []string `json:"phone_number,omitempty"`
-		FaxNumber   string   `json:"fax_number,omitempty"`
+		PhoneNumber []string `json:"phoneNumber,omitempty"`
+		FaxNumber   string   `json:"faxNumber,omitempty"`
 		Location    Location `json:"location,omitempty"`
 		Rating      Rating   `json:"rating,omitempty"`
 	}
@@ -50,10 +50,10 @@ type (
 		Helpfulness float64 `json:"helpfulness"`
 		Easiness     float64 `json:"easiness"`
 		Clarity      float64 `json:"clarity"`
-		AverageGrade string  `json:"average_grade"`
+		AverageGrade string  `json:"averageGrade"`
 		Hotness      bool    `json:"hotness"`
-		RatingsCount float64 `json:"ratings_count"`
-		RatingUrl    string  `json:"rating_url,omitempty"`
+		RatingsCount float64 `json:"ratingsCount"`
+		RatingUrl    string  `json:"ratingUrl,omitempty"`
 	}
 )
 

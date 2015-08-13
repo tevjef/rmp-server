@@ -131,15 +131,13 @@ func filterProfessors(professors Professors, params Parameter) (filtered Profess
 	for _, val := range professors {
 		//Instead of matching the last name exactly, determine equality by strings.Contains which would give me
 		// support for compound names
-		if l(val.Location.City) == l(params.City) && strings.Contains(l(val.LastName), l(params.LastName)) {
+		if l(val.Location.City) == l(params.City) && (strings.Contains(l(val.LastName), l(params.LastName)) ||
+		strings.Contains(l(val.FirstName), l(params.LastName))) {
 			if len(params.FirstName) == 0 {
 				filtered = append(filtered, val)
 			} else if len(params.FirstName) > 0 && string(l(params.FirstName)[0]) == string(l(val.FirstName)[0]) {
 				filtered = append(filtered, val)
 			}
-		}
-		if len(params.FirstName) > 0 && string(l(params.City)[0]) == l(params.FirstName) {
-			filtered = append(filtered, val)
 		}
 	}
 	return
@@ -326,7 +324,6 @@ func getPeopleSearchDocument(professor *Professor) *goquery.Document {
 	values["p_name_last"] = []string{professor.LastName}
 	values["p_name_first"] = []string{professor.FirstName}
 	resp, _ := http.PostForm("https://www.acs.rutgers.edu/pls/pdb_p/Pdb_Display.search_results", values)
-
 	doc, _ := goquery.NewDocumentFromResponse(resp)
 	return doc
 }

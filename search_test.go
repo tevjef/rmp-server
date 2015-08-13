@@ -37,6 +37,28 @@ func TestSearch(t *testing.T) {
 	return
 }
 
+func TestNJITSearch(t *testing.T) {
+	params := Parameter{
+		FirstName:"L",
+		LastName:   "Lay",
+		Department: "Computer Science",
+		City:       "Newark",
+		IsRutgers:  false}
+
+	options := Options{
+		FilterSearch:  true,
+		RutgersSearch: true,
+		SortSearch:    true}
+
+	v := search(params, options)
+
+	expected := 1
+	result := len(v)
+	t.Logf("Result: %#s", v)
+	assert.Equal(t, expected, result)
+	return
+}
+
 func TestSearchWithInclusion(t *testing.T) {
 	expectedFirstName := "David"
 	expectedCity := "New Brunswick"
