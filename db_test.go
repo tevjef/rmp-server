@@ -70,6 +70,14 @@ func TestQueryExclusionsForMapping(t *testing.T) {
 	tearDown()
 }
 
+func TestRefreshDatabase(t *testing.T) {
+	setup()
+
+	RefreshDatabase(testDatabase)
+
+	tearDown()
+}
+
 func TestIncrementStaleCount(t *testing.T) {
 	setup()
 	expected := 0
@@ -110,15 +118,15 @@ func TestUpdateMappings(t *testing.T) {
 func TestQueryStaleMappingsForUpdate(t *testing.T) {
 	setup()
 
-	var lastName string
-	var dumb string
+	var lastName sql.NullString
+	var dumb sql.NullString
 	rows := queryStaleMappingsForUpdate(testDatabase)
 	for rows.Next() {
 		err := rows.Scan(&dumb, &dumb, &lastName, &dumb, &dumb, &dumb, &dumb)
 		checkError(err)
 		log.Println("Result", lastName)
 	}
-	assert.True(t, len(lastName) > 1)
+	assert.True(t, len(lastName.String) > 1)
 	tearDown()
 }
 

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"log"
 	"crypto/sha1"
 	"regexp"
 )
@@ -36,6 +35,7 @@ type (
 		SortSearch    bool
 		FilterSearch  bool
 		RutgersSearch bool
+		InsertResults bool
 	}
 )
 
@@ -178,7 +178,7 @@ func execSearch(name string, isRutgers bool, offset int) *goquery.Document {
 		uni = "+rutgers"
 	}
 	url := fmt.Sprintf(BaseRMPUrl+"/search.jsp?query=%s%s&stateselect=nj&offset=%d", name, uni, offset)
-	log.Println("Search Url", url)
+	fmt.Println("Search Url", url)
 	doc, _ := goquery.NewDocument(url)
 	return doc
 }
@@ -205,7 +205,7 @@ func getNumberOfProfessors(doc *goquery.Document) int {
 
 func execLookup(professor *Professor) {
 	url := BaseRMPUrl + professor.Rating.RatingUrl
-	log.Println("Lookup:", url)
+	fmt.Println("Lookup:", url)
 	doc, _ := goquery.NewDocument(url)
 	extractProfessor(professor, doc)
 }

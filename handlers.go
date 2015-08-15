@@ -32,7 +32,6 @@ func reportHandler(c *gin.Context) {
 
 func validateParams(param Parameter) error {
 	if isEmpty(param.LastName) || isEmpty(param.Department) || isEmpty(param.City) || isEmpty(param.CourseNumber){
-		log.Printf("%#v", param)
 		return fmt.Errorf("Must supply all parameters. Params = %#v", param)
 	}
 	return nil
@@ -60,6 +59,8 @@ func defaultHandler(c *gin.Context) (Parameter, error) {
 		CourseNumber: courseNumber,
 		Department:   department,
 		IsRutgers:    isRutgers}
+
+	log.Printf("%#v", params)
 
 	err := validateParams(params)
 	if err != nil {

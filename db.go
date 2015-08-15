@@ -27,7 +27,13 @@ func RefreshDatabase(db *sql.DB) {
 	params := constructParametersFromRows(queryStaleMappingsForUpdate(db), db)
 
 	for _, param := range params{
-		prof := BasicSearch(param, db)
+		options := Options{
+			FilterSearch:  true,
+			RutgersSearch: true,
+			SortSearch:    true,
+			InsertResults:false}
+
+		prof := FullSearch(param, options, db)
 		fmt.Printf("REFRESHED: %#s", prof)
 	}
 }
@@ -44,24 +50,24 @@ func SearchServers(params Parameter, db *sql.DB) (professor *Professor) {
 	if professor == nil {
 		professorId, professor, err = getProfessorFromRow(queryAdjacentMappingsByParams(params, db))
 		if err != nil && professorId != -1 {
-			insertMapping(params, professorId, db)
+			insertOrUpdateMapping(params, professorId, db)
 			fmt.Printf("INSERTING ADJACENT")
-
 		}
 		fmt.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
 	}
 	if professor == nil {
-		professor = BasicSearch(params, db)
+		options := Options{
+			FilterSearch:  true,
+			RutgersSearch: true,
+			SortSearch:    true,
+			InsertResults:true}
+
+		professor = FullSearch(params,options, db)
 	}
 	return professor
 }
 
-func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
-
+func FullSearch(params Parameter, options Options, db *sql.DB) (professor *Professor) {
 	professors := search(params, options)
 
 	if len(professors) > 0 {
@@ -70,12 +76,13 @@ func BasicSearch(params Parameter, db *sql.DB) (professor *Professor) {
 
 	fmt.Printf("SEARCH RESULTS: %#s\n\n", professor)
 
-
 	if professor != nil {
 		professorId := insertProfessor(professor, db)
-		exclusionIds := insertExclusions(params.Exclusion, db)
-		mappingId := insertMapping(params, professorId, db)
-		insertMappingExclusions(mappingId, exclusionIds, db)
+		mappingId := insertOrUpdateMapping(params, professorId, db)
+		if options.InsertResults {
+			exclusionIds := insertExclusions(params.Exclusion, db)
+			insertMappingExclusions(mappingId, exclusionIds, db)
+		}
 		_, professor, _ = getProfessorFromRow(queryProfessorMappingById(professorId, db))
 		fmt.Printf("ID: %d RETURNING AFTER INSERT PROFESSOR: %#s\n\n", professorId, professor)
 	}
@@ -125,7 +132,7 @@ func insertProfessor(p *Professor, db *sql.DB) (professorId int) {
 	return
 }
 
-func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
+func insertOrUpdateMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 	var hash string
 	db.QueryRow(
 		`SELECT mapping_id, hash FROM mapping
@@ -137,8 +144,8 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 	if hash != p.hash() {
 		err := db.QueryRow(
 			`INSERT INTO mapping
-			(first_name, last_name, subject, course, inclusion, professor_id, hash, is_rutgers)
-		 VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING mapping_id`,
+			(first_name, last_name, subject, course, inclusion, professor_id, hash, is_rutgers, city)
+		 VALUES($1,$2,$3,$4,$5,$6,$7,$8, $9) RETURNING mapping_id`,
 			ToNullString(p.FirstName),
 			ToNullString(p.LastName),
 			ToNullString(p.Department),
@@ -147,6 +154,7 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 			professorId,
 			p.hash(),
 			ToNullBool(p.IsRutgers),
+			ToNullString(p.City),
 		).
 		Scan(&mappingId)
 		checkError(err)
@@ -159,14 +167,14 @@ func insertMapping(p Parameter, professorId int, db *sql.DB) (mappingId int) {
 func insertExclusions(exclusions []string, db *sql.DB) (exclusionIds []int) {
 	for _, val := range exclusions {
 		var tempId int
-		var tempUrl string
+		var tempUrl sql.NullString
 		db.QueryRow(
 		`SELECT url FROM exclusions
 				WHERE url = $1 LIMIT 1 RETURNING exclusion_id, url`,
 		val).
 		Scan(&tempId, &tempUrl)
 
-		if tempUrl != val {
+		if tempUrl.String != val {
 			err := db.QueryRow(
 				`INSERT INTO exclusions
 				(url)
@@ -182,10 +190,16 @@ func insertExclusions(exclusions []string, db *sql.DB) (exclusionIds []int) {
 
 func insertMappingExclusions(mappingId int, exclusionIds []int, db *sql.DB) {
 	for _, val := range exclusionIds {
+
+		db.QueryRow(`INSERT INTO mapping_exclusions
+				(exclusion_id, mapping_id)
+			 VALUES($1, $2)`, val, mappingId)
+
 		smt, err := db.Prepare(
 			`INSERT INTO mapping_exclusions
 				(exclusion_id, mapping_id)
 			 VALUES($1, $2)`)
+
 		res, err := smt.Exec(val, mappingId)
 		checkError(err)
 
@@ -201,28 +215,31 @@ func insertMappingExclusions(mappingId int, exclusionIds []int, db *sql.DB) {
 func constructParametersFromRows(rows *sql.Rows, db *sql.DB) (params []Parameter) {
 	for rows.Next() {
 		var mappingId int
-		var firstName string
-		var lastName string
-		var subject string
-		var course string
-		var inclusion string
+		var firstName sql.NullString
+		var lastName sql.NullString
+		var city sql.NullString
+		var subject sql.NullString
+		var course sql.NullString
+		var inclusion sql.NullString
 		var exclusions []string
 		var isRutgers bool
 
-		rows.Scan(&mappingId, &firstName, &lastName, &subject, &course, &inclusion, &isRutgers)
+		rows.Scan(&mappingId, &firstName, &lastName, &subject, &course, &inclusion, &isRutgers, &city)
+
 		exclRows := queryExclusionsForMapping(mappingId, db)
 		for exclRows.Next() {
-			var tempExclusions string
+			var tempExclusions sql.NullString
 			exclRows.Scan(&tempExclusions)
-			exclusions = append(exclusions, tempExclusions)
+			exclusions = append(exclusions, tempExclusions.String)
 		}
 
 		param :=  Parameter{
-			FirstName:firstName,
-			LastName:lastName,
-			Department:subject,
-			CourseNumber:course,
-			Inclusion:inclusion,
+			FirstName:firstName.String,
+			LastName:lastName.String,
+			Department:subject.String,
+			City:city.String,
+			CourseNumber:course.String,
+			Inclusion:inclusion.String,
 			Exclusion:exclusions,
 			IsRutgers:isRutgers,
 		}
@@ -233,7 +250,7 @@ func constructParametersFromRows(rows *sql.Rows, db *sql.DB) (params []Parameter
 
 func queryStaleMappingsForUpdate(db *sql.DB) *sql.Rows {
 	rows, err := db.Query(
-		`SELECT mapping.mapping_id, mapping.first_name, mapping.last_name, mapping.subject, mapping.course, mapping.inclusion, is_rutgers
+		`SELECT mapping.mapping_id, mapping.first_name, mapping.last_name, mapping.subject, mapping.course, mapping.inclusion, is_rutgers, city
 		FROM
 			mapping
 		WHERE
