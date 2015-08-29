@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	SearchLimit       = 200
+	SearchLimit       = 160
 	DefaultSearchSize = 20
 	BaseRMPUrl        = "http://www.ratemyprofessors.com"
 )
@@ -50,7 +50,7 @@ func search(params Parameter, options Options) (professors Professors) {
 
 		//If more searches are necessary, make them
 		if numOfProfessors > DefaultSearchSize {
-			for offset := DefaultSearchSize; offset <= numOfProfessors; offset += DefaultSearchSize {
+			for offset := DefaultSearchSize; offset <= numOfProfessors && offset <= SearchLimit; offset += DefaultSearchSize {
 				wg.Add(1)
 				go func(offset int) {
 					doc := execSearch(params.LastName, params.IsRutgers, offset)
