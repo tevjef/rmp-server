@@ -14,6 +14,7 @@ func searchHandler(c *gin.Context) {
 			params.IsRutgers = false
 			p = SearchServers(params, database)
 		}
+		c.Header("Cache-Control", "public, max-age=1209600")
 		c.JSON(200, p)
 	} else {
 		c.String(400, err.Error())
