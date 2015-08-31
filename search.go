@@ -39,10 +39,35 @@ type (
 	}
 )
 
-func search(params Parameter, options Options) (professors Professors) {
+func SearchRMP(params Parameter) (professor *Professor) {
+	professor = search(params)
+
+	if professor == nil && params.IsRutgers != false {
+		params.IsRutgers = false
+		professor = search(params)
+	}
+	if professor != nil {
+		//Pull addition professor information from rutgers directory
+		execPeopleSearch(professor)
+	}
+
+	fmt.Printf("SEARCH RESULTS: %#s\n\n",professor)
+	return professor
+}
+
+func search(params Parameter) (professor *Professor) {
+	var professors Professors
 	var wg sync.WaitGroup
 	//Execute normal search if there is no explicit professor to search for
-	if !params.hasInclusion() {
+	if params.hasInclusion() {
+		includedProfessor := &Professor{
+			Rating: Rating{
+				RatingUrl: params.Inclusion,
+			},
+		}
+		execLookup(includedProfessor)
+		return includedProfessor
+	} else {
 		//Initial search to get professors
 		doc := execSearch(params.LastName, params.IsRutgers, 0)
 		numOfProfessors := getNumberOfProfessors(doc)
@@ -60,20 +85,35 @@ func search(params Parameter, options Options) (professors Professors) {
 			}
 		}
 		wg.Wait()
-	} else {
-		//Since this was explicitly added it should not be filtered out if it doesn't match the filter's conditions
-		options.FilterSearch = false
-		professors = appendProfessors(professors, []*Professor{
-			&Professor{
-				Rating: Rating{
-					RatingUrl: params.Inclusion,
-				},
-			}})
+
+
+		//Once finished discovering all possible professors remove listings that match our exclusion list
+		professors = filterListings(params, professors)
+
+		//Deeper search for professors info.
+		for _, val := range professors {
+			wg.Add(1)
+			go func(prof *Professor) {
+				execLookup(prof)
+				wg.Done()
+			}(val)
+		}
+		wg.Wait()
+
+		//Filters out professors that don't match certain conditions.
+		professors = filterProfessors(professors, params)
+
+		sortProfessors(professors, params)
+
+		if len(professors) > 0 {
+			professor = professors[0]
+		}
 	}
+	return
+}
 
-	//Once finished discovering all possible professors remove listings that match our exclusion list
-	professors = filterListings(params, professors)
-
+func execListLookup(professors Professors) {
+	var wg sync.WaitGroup
 	//Deeper search for professors info.
 	for _, val := range professors {
 		wg.Add(1)
@@ -83,22 +123,6 @@ func search(params Parameter, options Options) (professors Professors) {
 		}(val)
 	}
 	wg.Wait()
-
-	//Filters out professors that don't match certain conditions.
-	if options.FilterSearch {
-		professors = filterProfessors(professors, params)
-	}
-
-	//Pull addition professor information from rutgers directory
-	if options.RutgersSearch {
-		searchRutgersProfessors(professors)
-	}
-
-	if options.SortSearch {
-		sortProfessors(professors, params)
-	}
-
-	return
 }
 
 func filterListings(params Parameter, professors Professors) (filtered Professors) {
@@ -143,7 +167,7 @@ func filterProfessors(professors Professors, params Parameter) (filtered Profess
 	return
 }
 
-func searchRutgersProfessors(professors Professors) {
+func execListPeopleSearch(professors Professors) {
 	var wg sync.WaitGroup
 	for _, val := range professors {
 		wg.Add(1)

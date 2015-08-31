@@ -9,11 +9,7 @@ import (
 func searchHandler(c *gin.Context) {
 	params, err := defaultHandler(c)
 	if err == nil {
-		p := SearchServers(params, database)
-		if (p == nil) {
-			params.IsRutgers = false
-			p = SearchServers(params, database)
-		}
+		p := Search(params, database)
 		c.Header("Cache-Control", "public, max-age=1209600")
 		c.JSON(200, p)
 	} else {

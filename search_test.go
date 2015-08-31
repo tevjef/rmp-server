@@ -23,18 +23,10 @@ func TestSearch(t *testing.T) {
 		City:       "Newark",
 		IsRutgers:  false}
 
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
+	result := search(params)
 
-	v := search(params, options)
-
-	expected := 1
-	result := len(v)
-	t.Logf("Result: %#s", v)
-	assert.Equal(t, expected, result)
-	return
+	t.Logf("Result: %#s", result)
+	assert.True(t, result != nil)
 }
 
 func TestNJITSearch(t *testing.T) {
@@ -45,19 +37,26 @@ func TestNJITSearch(t *testing.T) {
 		City:       "Newark",
 		IsRutgers:  false}
 
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
+	result := search(params)
 
-	v := search(params, options)
-
-	expected := 1
-	result := len(v)
-	t.Logf("Result: %#s", v)
-	assert.Equal(t, expected, result)
+	t.Logf("Result: %#s", result)
+	assert.True(t, result != nil)
 	return
 }
+
+func TestSearchImpossible(t *testing.T) {
+	params := Parameter{
+		LastName:   "Asami-Sato",
+		Department: "Computer Science",
+		City:       "Newark",
+		IsRutgers:  false}
+
+	result := search(params)
+
+	t.Logf("Result: %#s", result)
+	assert.True(t, result != nil)
+}
+
 
 func TestSearchWithInclusion(t *testing.T) {
 	expectedFirstName := "David"
@@ -66,17 +65,12 @@ func TestSearchWithInclusion(t *testing.T) {
 	params := Parameter{
 		Inclusion: "/ShowRatings.jsp?tid=1284875"}
 
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
+	result := search(params)
 
-	professors := search(params, options)
-
-	t.Logf("Result: %#s", professors)
-	assert.True(t, len(professors) == 1)
-	assert.Equal(t, expectedFirstName, professors[0].FirstName)
-	assert.Equal(t, expectedCity, professors[0].Location.City)
+	t.Logf("Result: %#s", result)
+	assert.True(t, result != nil)
+	assert.Equal(t, expectedFirstName, result.FirstName)
+	assert.Equal(t, expectedCity,result.Location.City)
 
 	return
 }
@@ -91,16 +85,9 @@ func TestSearchWithExclusion(t *testing.T) {
 		Exclusion:  []string{"/ShowRatings.jsp?tid=1834574", "/ShowRatings.jsp?tid=1208552"},
 		IsRutgers:  true}
 
-	options := Options{
-		FilterSearch:  true,
-		RutgersSearch: true,
-		SortSearch:    true}
+	result := search(params)
 
-	professors := search(params, options)
-	result := professors[0]
-
-	printProfs(professors)
-	t.Logf("Result: %#s", professors)
+	t.Logf("Result: %#s", result)
 	assert.Equal(t, expectedFirstName, result.FirstName)
 	return
 }
@@ -121,17 +108,8 @@ func TestSearchMultiPage(t *testing.T) {
 		City:      "Newark",
 		IsRutgers: true}
 
-	options := Options{
-		FilterSearch:  false,
-		RutgersSearch: false,
-		SortSearch:    false}
-
-	v := search(params, options)
-
-	expected := 21
-	result := len(v)
-	t.Logf("Result: %#s", v)
-	assert.True(t, result > expected)
+	result := search(params)
+	t.Logf("Result: %#s", result)
 	return
 }
 

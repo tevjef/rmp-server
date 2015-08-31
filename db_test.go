@@ -50,6 +50,80 @@ func InsertProfessor(b *testing.B) {
 	tearDown()
 }
 
+func TestInsertNullProfessor(t *testing.T) {
+	setup()
+	params := Parameter{
+		LastName:   "Test-Asami-Sato81",
+		Department: "Badassery",
+		City:       "Newark",
+		CourseNumber:"103",
+
+		IsRutgers:  true}
+
+	insertOrUpdateMapping(params, 0, testDatabase)
+
+	tearDown()
+}
+
+func TestGetMappingWithNullProfessor(t *testing.T) {
+	setup()
+
+	params := Parameter{
+		LastName:   "Test-Asami-Sato81",
+		Department: "Badassery",
+		City:       "Newark",
+		CourseNumber:"103",
+
+		IsRutgers:  true}
+
+	result ,err := SearchDatabase(params, testDatabase)
+
+	if err != nil {
+		assert.Fail(t, err.Error())
+	}
+	assert.True(t, result != nil)
+
+	log.Printf("Result: %#s", result)
+
+	tearDown()
+}
+
+func TestSearchWithNullProfessor(t *testing.T) {
+	setup()
+
+	params := Parameter{
+		LastName:   "Test-Asami-Sato81",
+		Department: "Badassery",
+		City:       "Newark",
+		CourseNumber:"103",
+
+		IsRutgers:  true}
+
+	result := Search(params, testDatabase)
+
+	assert.True(t, result != nil)
+
+	log.Printf("Result: %#s", result)
+
+	tearDown()
+}
+
+func TestCheckNullProfessor(t *testing.T) {
+	setup()
+
+	params := Parameter{
+		LastName:   "Test-Asami-Sato81",
+		Department: "Badassery",
+		City:       "Newark",
+		CourseNumber:"103",
+
+		IsRutgers:  true}
+
+	assert.True(t, 	checkMappingExists(params, testDatabase))
+
+	tearDown()
+}
+
 func TestInsertExclusions(t *testing.T) {
 	setup()
 
@@ -80,7 +154,7 @@ func TestRefreshDatabase(t *testing.T) {
 
 func TestIncrementStaleCount(t *testing.T) {
 	setup()
-	expected := 0
+	expected := int64(0)
 	params := Parameter{
 		LastName:   "Friedman",
 		Department: "History",
@@ -130,7 +204,7 @@ func TestQueryStaleMappingsForUpdate(t *testing.T) {
 	tearDown()
 }
 
-func TestServerSearch(t *testing.T) {
+func TestDatabaseSearch(t *testing.T) {
 	setup()
 
 	params := Parameter{
@@ -141,7 +215,12 @@ func TestServerSearch(t *testing.T) {
 
 		IsRutgers:  true}
 
-	result := SearchServers(params, testDatabase)
+	result ,err := SearchDatabase(params, testDatabase)
+
+	if err != nil {
+		assert.Fail(t, err.Error())
+	}
+	assert.True(t, result != nil)
 
 	log.Printf("Result: %#s", result)
 
