@@ -112,7 +112,7 @@ func search(params Parameter) (professor *Professor) {
 	return
 }
 
-func execListLookup(professors Professors) {
+/*func execListLookup(professors Professors) {
 	var wg sync.WaitGroup
 	//Deeper search for professors info.
 	for _, val := range professors {
@@ -123,7 +123,7 @@ func execListLookup(professors Professors) {
 		}(val)
 	}
 	wg.Wait()
-}
+}*/
 
 func filterListings(params Parameter, professors Professors) (filtered Professors) {
 	for _, prof := range professors {
@@ -165,18 +165,6 @@ func filterProfessors(professors Professors, params Parameter) (filtered Profess
 		}
 	}
 	return
-}
-
-func execListPeopleSearch(professors Professors) {
-	var wg sync.WaitGroup
-	for _, val := range professors {
-		wg.Add(1)
-		go func(prof *Professor) {
-			prof = execPeopleSearch(prof)
-			wg.Done()
-		}(val)
-	}
-	wg.Wait()
 }
 
 func printProfs(p Professors) {

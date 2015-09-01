@@ -40,6 +40,7 @@ func RefreshDatabase(db *sql.DB) {
 }
 
 func Search(params Parameter, db *sql.DB) (professor *Professor) {
+	fmt.Printf("Search() %#v Hash: %s \n", params, params.hash())
 	//First search the database for the professor
 	professor, _ = SearchDatabase(params, db)
 
@@ -70,7 +71,8 @@ func SearchDatabase(params Parameter, db *sql.DB) (professor *Professor, err err
 		professorId, professor, err = getProfessorFromRow(queryAdjacentMappingsByParams(params, db))
 		if err != nil && professorId != -1 {
 			insertOrUpdateMapping(params, professorId, db)
-			fmt.Printf("INSERTING ADJACENT")
+			fmt.Printf("ID: %d INSERTING ADJACENT: %#v\n\n",professorId, professor)
+
 		}
 		fmt.Printf("ID: %d SEARCH ADJACENT: %#s\n\n",professorId, professor)
 	}
@@ -149,6 +151,8 @@ func insertOrUpdateMapping(p Parameter, professorId int64, db *sql.DB) (mappingI
 		).
 		Scan(&mappingId)
 		checkError(err)
+		fmt.Printf("Inserting mapping: %#s", p)
+
 	} else {
 		updateMapping(mappingId, professorId, db)
 	}
@@ -259,6 +263,7 @@ func updateMapping(mappingId, professorId int64, db *sql.DB) (id int64) {
 		ToNullInt64(mappingId))
 	err := row.Scan(&id)
 	checkError(err)
+	fmt.Printf("Updating mapping: %d", mappingId)
 	return
 }
 
@@ -277,6 +282,7 @@ func queryExclusionsForMapping(mappingId int64, db *sql.DB) *sql.Rows {
 }
 
 func queryAdjacentMappingsByParams(params Parameter, db *sql.DB) *sql.Row {
+	fmt.Printf("queryAdjacentMappingsByParams() Hash: %s \n", params.hash())
 	row := db.QueryRow(
 		`SELECT professors.professor_id, professors.first_name, professors.last_name, professors.email, professors.department, professors.title,
 		professors.phone_number, professors.fax_number,professors.school, professors.state, professors.city,
@@ -311,7 +317,7 @@ func queryProfessorMappingById(professorId int64, db *sql.DB) *sql.Row {
 }
 
 func queryProfessorMappingByParams(params Parameter, db *sql.DB) *sql.Row {
-	fmt.Printf("queryProfessorMappingByParams() %#v Hash: %s \n", params, params.hash())
+	fmt.Printf("queryProfessorMappingByParams() Hash: %s \n", params.hash())
 	row := db.QueryRow(
 		`SELECT professors.professor_id, professors.first_name, professors.last_name, professors.email, professors.department,
 		professors.title, professors.phone_number, professors.fax_number, professors.school, professors.state,
@@ -395,7 +401,7 @@ func getProfessorFromRow(row *sql.Row) (professorId int64, professor *Professor,
 			},
 		}
 
-		fmt.Printf("getProfessorFromRow() %#v", professor)
+		fmt.Printf("getProfessorFromRow() %#v\n", professor)
 
 		return professorId, professor, err
 	}
