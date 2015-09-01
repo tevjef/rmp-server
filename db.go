@@ -43,7 +43,7 @@ func Search(params Parameter, db *sql.DB) (professor *Professor) {
 	//First search the database for the professor
 	professor, _ = SearchDatabase(params, db)
 
-	if mappingExists := checkMappingExists(params, db); professor == nil && mappingExists {
+	if mappingExists := checkMappingExists(params, db); professor == nil && !mappingExists {
 		//If they're not in the database, scrape RMP
 		professor = SearchRMP(params)
 		var professorId int64
@@ -327,10 +327,10 @@ func queryProfessorMappingByParams(params Parameter, db *sql.DB) *sql.Row {
 }
 
 func checkMappingExists(params Parameter, db *sql.DB) (exists bool) {
-	fmt.Printf("checkMappingExists() %#v Hash: %s \n", params, params.hash())
 	db.QueryRow(
 		`SELECT EXISTS(SELECT * FROM mapping WHERE hash = $1) AS bool`,
 		params.hash()).Scan(&exists)
+	fmt.Printf("checkMappingExists() %#v Hash: %s Result: %s \n", params, params.hash(), exists)
 	return
 }
 
